@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "LogIdCreate.Core.Cmd": {
+      "commandName": "Project",
+      "commandLineArgs": "init -s C:\\TFS\\Github\\logidcreate\\example\\LogIdCreateExample.sln",
+      //"commandLineArgs": "createid -s C:\\TFS\\Github\\logidcreate\\example\\LogIdCreateExample.sln"
+
+    }
+  }
+}
