@@ -15,5 +15,8 @@ namespace LogIdCreate.Core.Cmd.Options
 
         [Option('p', "project", Required = false, HelpText = "The filter of a specific project(s).")]
         public string? Project { get; set; }
+
+        [Option('r', "rewriter", Required = false, HelpText = "Which rewriter to use. If not set, the default rewriter optimized for Microsoft Extensions Logger will be used. Please set the rewriter value to \"serilog\" if your code is using Serilog logger.")]
+        public string? Rewriter { get; set; }
     }
 }
