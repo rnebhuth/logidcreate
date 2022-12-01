@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Runner.cs" />
+	  <Compile Remove="Template\AssemblyEventIds.cs" />
+	  <Compile Remove="Walker\FindAllEventIdsWalker.cs" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Include="Runner.cs" />
+	  <None Include="Template\AssemblyEventIds.cs">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	  <None Include="Walker\FindAllEventIdsWalker.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.1.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="4.1.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.1.0" />
+		
+				<PackageReference Include="CommandLineParser" Version="2.8.0" />
+
+		<PackageReference Include="CommandLineParser" Version="2.8.0" />
+
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
+
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="6.0.0" />
+
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="appsettings.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+</Project>

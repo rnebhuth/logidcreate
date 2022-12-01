@@ -1,0 +1,20 @@
+{
+  "profiles": {
+    "LogIdCreate.Core.Cmd init": {
+      "commandName": "Project",
+      "commandLineArgs": "init -s C:\\TFS\\Github\\logidcreate\\example\\LogIdCreateExample.sln"
+    },
+    "LogIdCreate.Core.Cmd createid": {
+      "commandName": "Project",
+      "commandLineArgs": "createid -s C:\\TFS\\Github\\logidcreate\\example\\LogIdCreateExample.sln" 
+    },
+    "LogIdCreate.Core.Cmd init modules serilog": {
+      "commandName": "Project",
+      "commandLineArgs": "init  -s C:\\git\\Fraenkische\\FITS4u_IoT\\src\\FITS4u.IoT.Modules.sln"
+    },
+    "LogIdCreate.Core.Cmd createid modules sewrilog": {
+      "commandName": "Project",
+      "commandLineArgs": "createid -r serilog -s C:\\git\\Fraenkische\\FITS4u_IoT\\src\\FITS4u.IoT.Modules.sln"
+    }
+  }
+}
