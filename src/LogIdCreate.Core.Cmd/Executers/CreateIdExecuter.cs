@@ -63,7 +63,6 @@ namespace LogIdCreate.Core.Cmd.Executers
                 scope.Document = document;
 
                 if (document.Name == "WeatherForecastController.cs" || true)
-               // if (document.FilePath == @"C:\git\Fraenkische\FITS4u_IoT\src\PartsScanModule\PartsScanModule.cs" || false)
                 {
                     List<Type> types = new List<Type>();
                     types.Add(typeof(FindLogClassName));

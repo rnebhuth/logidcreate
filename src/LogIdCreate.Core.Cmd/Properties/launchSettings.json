@@ -10,11 +10,11 @@
     },
     "LogIdCreate.Core.Cmd init modules serilog": {
       "commandName": "Project",
-      "commandLineArgs": "init  -s C:\\git\\Fraenkische\\FITS4u_IoT\\src\\FITS4u.IoT.Modules.sln"
+      "commandLineArgs": "init  -s C:\\git\\*\\*\\src\\*.IoT.Modules.sln"
     },
     "LogIdCreate.Core.Cmd createid modules sewrilog": {
       "commandName": "Project",
-      "commandLineArgs": "createid -r serilog -s C:\\git\\Fraenkische\\FITS4u_IoT\\src\\FITS4u.IoT.Modules.sln"
+      "commandLineArgs": "createid -r serilog -s C:\\git\\*\\*\\src\\*.IoT.Modules.sln"
     }
   }
 }
