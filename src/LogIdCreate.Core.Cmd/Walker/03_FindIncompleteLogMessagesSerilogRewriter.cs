@@ -117,7 +117,7 @@ namespace LogIdCreate.Core.Cmd.Walker
                             messageTemplateExpression = messageTemplateExpression.Substring(messageTemplateExpression.IndexOf('"'));
                             messageTemplateExpression = messageTemplateExpression.Substring(0, messageTemplateExpression.LastIndexOf('"') + 1);
                             // Finally add 3 interpolated parameters to the begin of the messageTemplate variable content.
-                            messageTemplateExpression = messageTemplateExpression.Insert(1, "[{Severity}{FixableBy}{EventId}] ");
+                            messageTemplateExpression = messageTemplateExpression.Insert(1, "<{Severity}{FixableBy}{EventId}> ");
                             list[messageTemplateIndex] = node.ArgumentList.Arguments[messageTemplateIndex].WithExpression(SyntaxFactory.ParseExpression(messageTemplateExpression));
 
                             var sargList = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(list));
