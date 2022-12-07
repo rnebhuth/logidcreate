@@ -35,118 +35,141 @@ namespace LogIdCreate.Core.Cmd.Walker
             var fe = node.Expression as MemberAccessExpressionSyntax;
             if (fe != null && (fe.Name.ToString() == "Information" || fe.Name.ToString() == "Warning" || fe.Name.ToString() == "Error")) // To make it faster.
             {
-                var op = scope.Semantic.GetOperation(node) as IInvocationOperation;
-                if (op == null)
+                IInvocationOperation opInvocation = null;
+                IDynamicInvocationOperation opDynamicInvocation = null;
+                
+                string containingType = string.Empty;
+                string methodName = string.Empty;
+                int argumentsCount = 0;
+
+                var op = scope.Semantic.GetOperation(node);
+                if (op is IInvocationOperation)
+                {
+                    opInvocation = op as IInvocationOperation;
+                    containingType = opInvocation.TargetMethod.ContainingType.ToString();
+                    methodName = opInvocation.TargetMethod.Name;
+                    argumentsCount = opInvocation.Arguments.Count();
+                }
+                else if (op is IDynamicInvocationOperation)
+                {
+                    opDynamicInvocation = op as IDynamicInvocationOperation;
+                    containingType = ((IDynamicMemberReferenceOperation)opDynamicInvocation.Operation).Instance.Type.ToString();
+                    methodName = opDynamicInvocation.Operation.Syntax.TryGetInferredMemberName();
+                    argumentsCount = opDynamicInvocation.Arguments.Count();
+                }
+
+                if (opInvocation == null && opDynamicInvocation == null)
                 {
                     Console.WriteLine("Invalid Node:" + node);
                 }
-                else if (op.TargetMethod.ContainingType.ToString() == "Serilog.ILogger")
+                else
                 {
-                    int messageTemplateIndex = 0;
-                    bool addNew = false;
-
-                    
-                    ArgumentSyntax exceptionParamSyntax = null;
-                    ArgumentSyntax messageTemplateParamSyntax = null;
-                    ArgumentSyntax propertyValueParamSyntax = null;
-
-                        
-                    // Check if the first parameter is Exception
-                    var firstexpression = scope.Semantic.GetTypeInfo(node.ArgumentList.Arguments[0].Expression);
-                    if (firstexpression.Type.ToString().Contains("Exception"))
+                    if (containingType == "Serilog.ILogger")
                     {
-                        exceptionParamSyntax = node.ArgumentList.Arguments[0];
-                        messageTemplateIndex = 1;
-                    }
+                        int messageTemplateIndex = 0;
+                        bool addNew = false;
 
-                    messageTemplateParamSyntax = node.ArgumentList.Arguments[messageTemplateIndex];
-                    if (op.Arguments.Count() > messageTemplateIndex + 1)
-                    {
-                        propertyValueParamSyntax = node.ArgumentList.Arguments[messageTemplateIndex + 1];
-                    }
 
-                    var messageTemplateExpression = messageTemplateParamSyntax.Expression.ToString();
-                                     
-                    // Calculate Severity parameter value, depending on invoked logging method.
-                    var severity = "INF";
-                    if (op.TargetMethod.Name == "Error")
-                        severity = "ERR";
-                    else if (op.TargetMethod.Name == "Warning")
-                        severity = "WRN";
+                        ArgumentSyntax exceptionParamSyntax = null;
+                        ArgumentSyntax messageTemplateParamSyntax = null;
+                        ArgumentSyntax propertyValueParamSyntax = null;
 
-                    // If propertyValueParamSyntax is not set with severity, then we need to adapt the code and create all required propertyValues parameters.
-                    if (propertyValueParamSyntax == null || propertyValueParamSyntax.Expression.ToString().Trim('"') != severity)
-                    {
-                        var list = node.ArgumentList.Arguments.ToList();
 
-                        // Remove existing paramValues if any. They will be recreated later again as param01 - paramN by using interpolation values from messageTemplate.
-                        if (propertyValueParamSyntax != null)
+                        // Check if the first parameter is Exception
+                        var firstexpression = scope.Semantic.GetTypeInfo(node.ArgumentList.Arguments[0].Expression);
+                        if (firstexpression.Type.ToString().Contains("Exception"))
                         {
-                            for (var i = list.Count - 1; i > messageTemplateIndex; i--)
-                                list.RemoveAt(i);
+                            exceptionParamSyntax = node.ArgumentList.Arguments[0];
+                            messageTemplateIndex = 1;
                         }
 
-                        // Generate next Event ID
-                        var newId = scope.IdStore.CreateId(scope.LogClassName);
-
-                        // Add parameters for severity, FixableBy and EventId
-                        list.Insert(messageTemplateIndex + 1, SyntaxFactory.Argument(SyntaxFactory.ParseExpression($"\"{severity}\"")));
-                        list.Insert(messageTemplateIndex + 2, SyntaxFactory.Argument(SyntaxFactory.ParseExpression($"\"ADM\"")));
-                        list.Insert(messageTemplateIndex + 3, SyntaxFactory.Argument(SyntaxFactory.ParseExpression($"EventIds.{newId}")));
-
-                        var counter = 1;
-                        // First load the value of the messageTemplateParamSyntax to check how many placeholders with variables it contains.
-                        foreach (var childNode in messageTemplateParamSyntax.Expression.ChildNodes())
+                        messageTemplateParamSyntax = node.ArgumentList.Arguments[messageTemplateIndex];
+                        if (argumentsCount > messageTemplateIndex + 1)
                         {
-                            if (childNode.Kind() == SyntaxKind.Interpolation)
+                            propertyValueParamSyntax = node.ArgumentList.Arguments[messageTemplateIndex + 1];
+                        }
+
+                        var messageTemplateExpression = messageTemplateParamSyntax.Expression.ToString();
+
+                        // Calculate Severity parameter value, depending on invoked logging method.
+                        var severity = "INF";
+                        if (methodName == "Error")
+                            severity = "ERR";
+                        else if (methodName == "Warning")
+                            severity = "WRN";
+
+                        // If propertyValueParamSyntax is not set with severity, then we need to adapt the code and create all required propertyValues parameters.
+                        if (propertyValueParamSyntax == null || propertyValueParamSyntax.Expression.ToString().Trim('"') != severity)
+                        {
+                            var list = node.ArgumentList.Arguments.ToList();
+
+                            // Remove existing paramValues if any. They will be recreated later again as param01 - paramN by using interpolation values from messageTemplate.
+                            if (propertyValueParamSyntax != null)
                             {
-                                // Add existing interpolated parameter from messageTemplate as log method parameter.
-                                list.Insert(counter + messageTemplateIndex + 3, SyntaxFactory.Argument(SyntaxFactory.ParseExpression(childNode.ToString().TrimStart('{').TrimEnd('}'))));
-                                // Now replace the interpolated expression in messageTEmplate with parameter name. 
-                                messageTemplateExpression = messageTemplateExpression.Replace(childNode.ToString(), $"{{Param{counter.ToString("D2")}}}");
-                                counter++;
+                                for (var i = list.Count - 1; i > messageTemplateIndex; i--)
+                                    list.RemoveAt(i);
                             }
-                        }
 
+                            // Check if the messageTemplateExpression contains quotes. 
+                            if (messageTemplateExpression.IndexOf('"') != -1)
+                            {
+                                // Generate next Event ID
+                                var newId = scope.IdStore.CreateId(scope.LogClassName);
 
+                                // Add parameters for severity, FixableBy and EventId
+                                list.Insert(messageTemplateIndex + 1, SyntaxFactory.Argument(SyntaxFactory.ParseExpression($"\"{severity}\"")));
+                                list.Insert(messageTemplateIndex + 2, SyntaxFactory.Argument(SyntaxFactory.ParseExpression($"\"ADM\"")));
+                                list.Insert(messageTemplateIndex + 3, SyntaxFactory.Argument(SyntaxFactory.ParseExpression($"EventIds.{newId}")));
 
-                        // Check if the messageTemplateExpression contains quotes. 
-                        if (messageTemplateExpression.IndexOf('"') != -1)
-                        {
-                            // Remove everything prior and after quotes (this might be $, ()...).
-                            messageTemplateExpression = messageTemplateExpression.Substring(messageTemplateExpression.IndexOf('"'));
-                            messageTemplateExpression = messageTemplateExpression.Substring(0, messageTemplateExpression.LastIndexOf('"') + 1);
-                            // Finally add 3 interpolated parameters to the begin of the messageTemplate variable content.
-                            messageTemplateExpression = messageTemplateExpression.Insert(1, "<{Severity}{FixableBy}{EventId}> ");
-                            list[messageTemplateIndex] = node.ArgumentList.Arguments[messageTemplateIndex].WithExpression(SyntaxFactory.ParseExpression(messageTemplateExpression));
+                                var counter = 1;
+                                // First load the value of the messageTemplateParamSyntax to check how many placeholders with variables it contains.
+                                foreach (var childNode in messageTemplateParamSyntax.Expression.ChildNodes())
+                                {
+                                    if (childNode.Kind() == SyntaxKind.Interpolation)
+                                    {
+                                        // Add existing interpolated parameter from messageTemplate as log method parameter.
+                                        list.Insert(counter + messageTemplateIndex + 3, SyntaxFactory.Argument(SyntaxFactory.ParseExpression(childNode.ToString().TrimStart('{').TrimEnd('}'))));
+                                        // Now replace the interpolated expression in messageTEmplate with parameter name. 
+                                        messageTemplateExpression = messageTemplateExpression.Replace(childNode.ToString(), $"{{Param{counter.ToString("D2")}}}");
+                                        counter++;
+                                    }
+                                }
+                                
+                                // Remove everything prior and after quotes (this might be $, ()...).
+                                messageTemplateExpression = messageTemplateExpression.Substring(messageTemplateExpression.IndexOf('"'));
+                                messageTemplateExpression = messageTemplateExpression.Substring(0, messageTemplateExpression.LastIndexOf('"') + 1);
+                                // Finally add 3 interpolated parameters to the begin of the messageTemplate variable content.
+                                messageTemplateExpression = messageTemplateExpression.Insert(1, "<{Severity}{FixableBy}{EventId}> ");
+                                list[messageTemplateIndex] = node.ArgumentList.Arguments[messageTemplateIndex].WithExpression(SyntaxFactory.ParseExpression(messageTemplateExpression));
 
-                            var sargList = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(list));
+                                var sargList = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(list));
 
-                            var newItem = node.WithArgumentList(sargList.NormalizeWhitespace());
+                                var newItem = node.WithArgumentList(sargList.NormalizeWhitespace());
 
-                            scope.Save = true;
-                            node = newItem;
-                        }
-                        else
-                        {
-                            // If messageTemplateExpression doesn't contain quotes, then it is probably a string variable and this is something we can't deal with. The code needs to be manually adapted.  
-                            //messageTemplateExpression = messageTemplateExpression.Insert(1, "[{Severity}{FixableBy}{EventId}] ");
-                            var expressionWithComment = $@"// TODO: Repair this logging line manually
+                                scope.Save = true;
+                                node = newItem;
+                            }
+                            else
+                            {
+                                // If messageTemplateExpression doesn't contain quotes, then it is probably a string variable and this is something we can't deal with. The code needs to be manually adapted.  
+                                //messageTemplateExpression = messageTemplateExpression.Insert(1, "[{Severity}{FixableBy}{EventId}] ");
+                                var comment = $@"// TODO: Repair this logging line manually
 ";
 
-                            /*.NormalizeWhitespace()
-                           .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
-                           .WithAdditionalAnnotations(Formatter.Annotation)*/
+                                /*.NormalizeWhitespace()
+                               .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
+                               .WithAdditionalAnnotations(Formatter.Annotation)*/
 
-                            var newItem = node.WithLeadingTrivia(SyntaxFactory.ParseLeadingTrivia(expressionWithComment));//.WithExpression(SyntaxFactory.ParseExpression(expressionWithComment)).NormalizeWhitespace()
-                           //.WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
-                           //.WithAdditionalAnnotations(Formatter.Annotation);
-                        
-                            scope.Save = true;
-                            node = newItem;
+                                var newItem = node.WithLeadingTrivia(SyntaxFactory.ParseLeadingTrivia(comment));//.WithExpression(SyntaxFactory.ParseExpression(expressionWithComment)).NormalizeWhitespace()
+                                                                                                                              //.WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
+                                                                                                                              //.WithAdditionalAnnotations(Formatter.Annotation);
+
+                                scope.Save = true;
+                                node = newItem;
+                            }
+
+
                         }
-
-                        
                     }
                 }
                 

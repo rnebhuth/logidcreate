@@ -38,7 +38,8 @@ namespace LogIdCreate.Core.Cmd.Walker
                 SyntaxFactory.NameEquals("EventIds"),
                 SyntaxFactory.ParseName($"{scope.IdStore.FullName}.{scope.LogClassName}"));
             us = us.NormalizeWhitespace();
-            node = node.AddUsings(us);
+            if (!node.Usings.Any(u => u.NormalizeWhitespace().GetText().ToString() == us.GetText().ToString()))
+                node = node.AddUsings(us);
             
             return node;
         }
