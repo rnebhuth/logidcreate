@@ -155,14 +155,7 @@ namespace LogIdCreate.Core.Cmd.Walker
                                 //messageTemplateExpression = messageTemplateExpression.Insert(1, "[{Severity}{FixableBy}{EventId}] ");
                                 var comment = $@"// TODO: Repair this logging line manually
 ";
-
-                                /*.NormalizeWhitespace()
-                               .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
-                               .WithAdditionalAnnotations(Formatter.Annotation)*/
-
-                                var newItem = node.WithLeadingTrivia(SyntaxFactory.ParseLeadingTrivia(comment));//.WithExpression(SyntaxFactory.ParseExpression(expressionWithComment)).NormalizeWhitespace()
-                                                                                                                              //.WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
-                                                                                                                              //.WithAdditionalAnnotations(Formatter.Annotation);
+                                var newItem = node.WithLeadingTrivia(SyntaxFactory.ParseLeadingTrivia(comment));
 
                                 scope.Save = true;
                                 node = newItem;

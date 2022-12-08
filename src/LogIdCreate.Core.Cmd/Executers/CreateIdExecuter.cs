@@ -69,6 +69,8 @@ namespace LogIdCreate.Core.Cmd.Executers
                     types.Add(typeof(AddUsingRewriter));
                     if (!string.IsNullOrEmpty(rewriter) && "serilog".Equals(rewriter.Trim(), StringComparison.InvariantCultureIgnoreCase))
                         types.Add(typeof(FindIncompleteLogMessagesSerilogRewriter));
+                    else if (!string.IsNullOrEmpty(rewriter) && "withincludedeventid".Equals(rewriter.Trim(), StringComparison.InvariantCultureIgnoreCase))
+                        types.Add(typeof(FindIncompleteLogMessagesIncludeIdRewriter));
                     else
                         types.Add(typeof(FindIncompleteLogMessagesRewriter));
                     types.Add(typeof(FindAllEventIdsWalker));
