@@ -1,10 +1,36 @@
 {
   "profiles": {
-    "LogIdCreate.Core.Cmd": {
+    "LogIdCreate.Core.Cmd init": {
       "commandName": "Project",
-      "commandLineArgs": "init -s C:\\TFS\\Github\\logidcreate\\example\\LogIdCreateExample.sln",
-      //"commandLineArgs": "createid -s C:\\TFS\\Github\\logidcreate\\example\\LogIdCreateExample.sln"
-
+      "commandLineArgs": "init -s C:\\TFS\\Github\\logidcreate\\example\\LogIdCreateExample.sln"
+    },
+    "LogIdCreate.Core.Cmd createid": {
+      "commandName": "Project",
+      "commandLineArgs": "createid -s C:\\TFS\\Github\\logidcreate\\example\\LogIdCreateExample.sln"
+    },
+    "IoT Solution init": {
+      "commandName": "Project",
+      "commandLineArgs": "init  -s ..\\..\\..\\..\\..\\..\\FITS4u_IoT\\src\\FITS4u.IoT.Modules.sln"
+    },
+    "IoT Solution createid": {
+      "commandName": "Project",
+      "commandLineArgs": "createid -r serilog -s ..\\..\\..\\..\\..\\..\\FITS4u_IoT\\src\\FITS4u.IoT.Modules.sln"
+    },
+    "Backend Solution init": {
+      "commandName": "Project",
+      "commandLineArgs": "init  -s ..\\..\\..\\..\\..\\..\\FITS4u_Backend\\src\\FITS4u.Backend.sln"
+    },
+    "Backend Solution createid": {
+      "commandName": "Project",
+      "commandLineArgs": "createid -r withincludedeventid  -s ..\\..\\..\\..\\..\\..\\FITS4u_BAckend\\src\\FITS4u.Backend.sln"
+    },
+    "Functions Solution init": {
+      "commandName": "Project",
+      "commandLineArgs": "init  -s ..\\..\\..\\..\\..\\..\\FITS4u_Backend\\src\\FITS4u.Functions.sln"
+    },
+    "Functions Solution createid": {
+      "commandName": "Project",
+      "commandLineArgs": "createid -r withincludedeventid  -s ..\\..\\..\\..\\..\\..\\FITS4u_BAckend\\src\\FITS4u.Functions.sln"
     }
   }
 }

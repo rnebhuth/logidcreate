@@ -48,10 +48,18 @@ namespace LogIdCreate.Core.Cmd.Walker
 
             foreach (var item in Stack.Peek().Ids)
             {
+                var testDocumentation = SyntaxFactory.ParseLeadingTrivia($@"
+
+/// <summary>
+/// Value: {item.Value}
+{string.Join(Environment.NewLine, item.Occurrence.Select(a => "/// " + a))}
+/// </summary>
+");
                 var mem = SyntaxFactory.ParseMemberDeclaration($"public const int {item.Name} = BaseId + {item.Relative};" + Environment.NewLine)
                     .NormalizeWhitespace()
                     .WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
-                    .WithAdditionalAnnotations(Formatter.Annotation);
+                    .WithAdditionalAnnotations(Formatter.Annotation)
+                    .WithLeadingTrivia(testDocumentation); ;
                 TotalIds.Remove(item);
                 node = node.AddMembers(mem);
             }

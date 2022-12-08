@@ -36,7 +36,7 @@ namespace LogIdCreate.Core.Cmd.Executers
                     {
                         compilation = await project.GetCompilationAsync();
                         var errors = compilation.GetDiagnostics().Where(a => a.Severity == DiagnosticSeverity.Error).ToList();
-                        await RunProjectAsync(project);
+                        await RunProjectAsync(project, o.Rewriter);
                     }
                 }
 
@@ -44,7 +44,7 @@ namespace LogIdCreate.Core.Cmd.Executers
             }
         }
 
-        private async Task RunProjectAsync(Microsoft.CodeAnalysis.Project project)
+        private async Task RunProjectAsync(Microsoft.CodeAnalysis.Project project, string rewriter = null)
         {
             var eventIds = await ParseEventIdsAsync(project);
             if (eventIds == null)
@@ -64,13 +64,16 @@ namespace LogIdCreate.Core.Cmd.Executers
 
                 if (document.Name == "WeatherForecastController.cs" || true)
                 {
-                    List<Type> types = new List<Type>()
-                    {
-                        typeof(FindLogClassName),
-                        typeof(AddUsingRewriter),
-                        typeof(FindIncompleteLogMessagesRewriter),
-                        typeof(FindAllEventIdsWalker)
-                    };
+                    List<Type> types = new List<Type>();
+                    types.Add(typeof(FindLogClassName));
+                    types.Add(typeof(AddUsingRewriter));
+                    if (!string.IsNullOrEmpty(rewriter) && "serilog".Equals(rewriter.Trim(), StringComparison.InvariantCultureIgnoreCase))
+                        types.Add(typeof(FindIncompleteLogMessagesSerilogRewriter));
+                    else if (!string.IsNullOrEmpty(rewriter) && "withincludedeventid".Equals(rewriter.Trim(), StringComparison.InvariantCultureIgnoreCase))
+                        types.Add(typeof(FindIncompleteLogMessagesIncludeIdRewriter));
+                    else
+                        types.Add(typeof(FindIncompleteLogMessagesRewriter));
+                    types.Add(typeof(FindAllEventIdsWalker));
 
                     foreach (var type in types)
                     {
